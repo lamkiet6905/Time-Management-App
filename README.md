@@ -1,6 +1,7 @@
 Thành viên thực hiện
 + Lâm Tuấn Kiệt-0209868
 + Luyện Đức Chiến-0204968
+
 Đề tài: LifeRPG - Quản lý thời gian biểu tích hợp AI và Game
 *Giới thiệu
 LifeRPG không chỉ là một ứng dụng quản lý thời gian thông thường mà còn là một trò chơi nhập vai thực thụ. Dự án được phát triển nhằm giải quyết sự trì hoãn và nhàm chán của các ứng dụng to-do list truyền thống, giúp người dùng duy trì kỷ luật thông qua các cơ chế thưởng/phạt hấp dẫn
