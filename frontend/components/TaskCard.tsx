@@ -28,7 +28,8 @@ export default function TaskCard({ task, onPress, onComplete, done }: TaskCardPr
   const diff = DIFFICULTY_COLORS[task.difficulty as keyof typeof DIFFICULTY_COLORS] || DIFFICULTY_COLORS.normal;
   const priorityColor = PRIORITY_COLORS[task.priority as keyof typeof PRIORITY_COLORS] || Colors.priority.medium;
 
-  const isOverdue = !done && task.due_date && new Date(task.due_date) < new Date() && task.status === 'pending';
+  const deadlineTime = task.due_date ? new Date(new Date(task.due_date).getTime() + (task.duration_minutes ? parseInt(task.duration_minutes.toString()) : 0) * 60000) : null;
+  const isOverdue = !done && deadlineTime && deadlineTime < new Date() && task.status === 'pending';
 
   return (
     <TouchableOpacity
@@ -92,17 +93,10 @@ export default function TaskCard({ task, onPress, onComplete, done }: TaskCardPr
             </View>
           )}
 
-          {/* Duration */}
-          {task.duration_minutes && (
-            <View style={styles.badge}>
-              <Ionicons name="time-outline" size={10} color={Colors.text.muted} />
-              <Text style={styles.badgeText}>{task.duration_minutes}m</Text>
-            </View>
-          )}
         </View>
 
         {/* Due date */}
-        {task.due_date && (
+        {deadlineTime && (
           <View style={styles.dueRow}>
             <Ionicons
               name="calendar-outline"
@@ -110,7 +104,7 @@ export default function TaskCard({ task, onPress, onComplete, done }: TaskCardPr
               color={isOverdue ? Colors.status.error : Colors.text.muted}
             />
             <Text style={[styles.dueText, isOverdue && { color: Colors.status.error }]}>
-              {new Date(task.due_date).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' })}
+              Hết giờ: {deadlineTime.toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' })}
               {isOverdue ? '  ⚠️ Quá hạn' : ''}
             </Text>
           </View>

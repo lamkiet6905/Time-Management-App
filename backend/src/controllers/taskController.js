@@ -35,7 +35,7 @@ async function getTasks(req, res) {
 // POST /api/tasks
 async function createTask(req, res) {
   try {
-    const { title, description, due_date, priority, tags, difficulty: manualDifficulty, duration_minutes } = req.body;
+    const { title, description, due_date, priority, tags, difficulty: manualDifficulty, duration_minutes, exp_reward, hp_penalty } = req.body;
 
     if (!title) {
       return res.status(400).json({ success: false, message: 'Tiêu đề task là bắt buộc' });
@@ -60,8 +60,8 @@ async function createTask(req, res) {
       due_date: due_date ? new Date(due_date) : null,
       priority: priority || 'medium',
       difficulty,
-      exp_reward: baseExp,
-      hp_penalty: hpPenalty,
+      exp_reward: exp_reward !== undefined ? exp_reward : baseExp,
+      hp_penalty: hp_penalty !== undefined ? hp_penalty : hpPenalty,
       tags: tags || [],
       duration_minutes: duration_minutes || null,
       source: 'manual',
@@ -157,6 +157,7 @@ async function completeTask(req, res) {
           max_hp: user.max_hp,
           streak_days: user.streak_days,
           pending_level_up: user.pending_level_up,
+          total_tasks_completed: user.total_tasks_completed,
         },
       },
     });
@@ -205,8 +206,8 @@ async function aiParseTask(req, res) {
       due_date: parsed.due_date ? new Date(parsed.due_date) : null,
       priority: parsed.priority,
       difficulty,
-      exp_reward: baseExp,
-      hp_penalty: hpPenalty,
+      exp_reward: parsed.is_lazy ? 0 : baseExp,
+      hp_penalty: parsed.is_lazy ? 0 : hpPenalty,
       tags: parsed.tags,
       duration_minutes: parsed.duration_minutes,
       source: 'ai',

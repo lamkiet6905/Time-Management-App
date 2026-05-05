@@ -7,6 +7,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTaskStore } from '../../stores/taskStore';
+import { useAuthStore } from '../../stores/authStore';
 import { Colors, Spacing, BorderRadius, FontSize } from '../../constants/theme';
 
 const DIFFICULTY_INFO = {
@@ -28,6 +29,7 @@ export default function TaskDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { tasks, updateTask, deleteTask, completeTask } = useTaskStore();
+  const { updateUser } = useAuthStore();
 
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState('');
@@ -54,6 +56,8 @@ export default function TaskDetailScreen() {
   const diffInfo = DIFFICULTY_INFO[task.difficulty as keyof typeof DIFFICULTY_INFO] || DIFFICULTY_INFO.normal;
   const statusInfo = STATUS_INFO[task.status as keyof typeof STATUS_INFO] || STATUS_INFO.pending;
 
+  const isFutureTask = task.due_date && new Date(task.due_date).getTime() > Date.now();
+
   const handleSave = async () => {
     if (!title.trim()) return;
     setSaving(true);
@@ -76,6 +80,9 @@ export default function TaskDetailScreen() {
 
   const handleComplete = async () => {
     const result = await completeTask(task.id);
+    if (result && result.user) {
+      updateUser(result.user);
+    }
     router.back();
   };
 
@@ -165,16 +172,18 @@ export default function TaskDetailScreen() {
           </View>
           {task.due_date && (
             <View style={[styles.infoCard, { flex: 2 }]}>
-              <Text style={styles.infoLabel}>Deadline</Text>
+              <Text style={styles.infoLabel}>Giờ Bắt Đầu</Text>
               <Text style={styles.infoValue}>
-                {new Date(task.due_date).toLocaleString('vi-VN')}
+                {new Date(task.due_date).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
               </Text>
             </View>
           )}
-          {task.duration_minutes && (
-            <View style={styles.infoCard}>
-              <Text style={styles.infoLabel}>Thời Lượng</Text>
-              <Text style={styles.infoValue}>{task.duration_minutes} phút</Text>
+          {task.due_date && (
+            <View style={[styles.infoCard, { flex: 2 }]}>
+              <Text style={styles.infoLabel}>Deadline {task.duration_minutes ? `(+${task.duration_minutes}p)` : ''}</Text>
+              <Text style={styles.infoValue}>
+                {new Date(new Date(task.due_date).getTime() + (task.duration_minutes ? parseInt(task.duration_minutes.toString()) : 0) * 60000).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })}
+              </Text>
             </View>
           )}
         </View>
@@ -209,9 +218,16 @@ export default function TaskDetailScreen() {
             )}
           </TouchableOpacity>
         ) : task.status === 'pending' ? (
-          <TouchableOpacity style={styles.completeBtn} onPress={handleComplete} activeOpacity={0.85}>
-            <Ionicons name="checkmark-circle" size={22} color="#fff" />
-            <Text style={styles.completeBtnText}>✅ Hoàn Thành +{task.exp_reward} EXP</Text>
+          <TouchableOpacity 
+            style={[styles.completeBtn, isFutureTask && { backgroundColor: Colors.text.muted, shadowOpacity: 0 }]} 
+            onPress={isFutureTask ? undefined : handleComplete} 
+            activeOpacity={0.85}
+            disabled={!!isFutureTask}
+          >
+            <Ionicons name={isFutureTask ? "time-outline" : "checkmark-circle"} size={22} color="#fff" />
+            <Text style={styles.completeBtnText}>
+              {isFutureTask ? 'Chưa tới giờ hoàn thành' : `✅ Hoàn Thành +${task.exp_reward} EXP`}
+            </Text>
           </TouchableOpacity>
         ) : null}
       </ScrollView>

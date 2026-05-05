@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTaskStore } from '../../stores/taskStore';
 import { Colors, Spacing, BorderRadius, FontSize } from '../../constants/theme';
@@ -36,6 +37,31 @@ export default function CreateTaskScreen() {
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [dueTime, setDueTime] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [showDate, setShowDate] = useState(false);
+  const [showTime, setShowTime] = useState(false);
+
+  const onChangeDate = (event: any, selectedDate?: Date) => {
+    setShowDate(false);
+    if (selectedDate) {
+      setDate(selectedDate);
+      const yyyy = selectedDate.getFullYear();
+      const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(selectedDate.getDate()).padStart(2, '0');
+      setDueDate(`${yyyy}-${mm}-${dd}`);
+    }
+  };
+
+  const onChangeTime = (event: any, selectedDate?: Date) => {
+    setShowTime(false);
+    if (selectedDate) {
+      setDate(selectedDate);
+      const hh = String(selectedDate.getHours()).padStart(2, '0');
+      const min = String(selectedDate.getMinutes()).padStart(2, '0');
+      setDueTime(`${hh}:${min}`);
+    }
+  };
+
   const [priority, setPriority] = useState('medium');
   const [difficulty, setDifficulty] = useState('');
   const [tags, setTags] = useState('');
@@ -68,9 +94,18 @@ export default function CreateTaskScreen() {
     }
     setIsLoading(true);
     try {
+      let finalDueDate = dueDate;
+      if (dueTime && !dueDate) {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        finalDueDate = `${yyyy}-${mm}-${dd}`;
+      }
+
       let due_date: string | undefined;
-      if (dueDate) {
-        const dateStr = dueTime ? `${dueDate}T${dueTime}:00+07:00` : `${dueDate}T23:59:00+07:00`;
+      if (finalDueDate) {
+        const dateStr = dueTime ? `${finalDueDate}T${dueTime}:00+07:00` : `${finalDueDate}T23:59:00+07:00`;
         due_date = dateStr;
       }
 
@@ -212,28 +247,39 @@ export default function CreateTaskScreen() {
 
             <View style={styles.dateRow}>
               <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={styles.label}>Ngày (YYYY-MM-DD)</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="2024-12-31"
-                  placeholderTextColor={Colors.text.muted}
-                  value={dueDate}
-                  onChangeText={setDueDate}
-                  keyboardType="numbers-and-punctuation"
-                />
+                <Text style={styles.label}>Ngày</Text>
+                <TouchableOpacity style={[styles.input, { justifyContent: 'center' }]} onPress={() => setShowDate(true)}>
+                  <Text style={{ color: dueDate ? Colors.text.primary : Colors.text.muted }}>
+                    {dueDate || 'Chọn ngày'}
+                  </Text>
+                </TouchableOpacity>
               </View>
               <View style={[styles.inputGroup, { flex: 1 }]}>
-                <Text style={styles.label}>Giờ (HH:MM)</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="08:00"
-                  placeholderTextColor={Colors.text.muted}
-                  value={dueTime}
-                  onChangeText={setDueTime}
-                  keyboardType="numbers-and-punctuation"
-                />
+                <Text style={styles.label}>Giờ</Text>
+                <TouchableOpacity style={[styles.input, { justifyContent: 'center' }]} onPress={() => setShowTime(true)}>
+                  <Text style={{ color: dueTime ? Colors.text.primary : Colors.text.muted }}>
+                    {dueTime || 'Chọn giờ'}
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
+
+            {showDate && (
+              <DateTimePicker
+                value={date}
+                mode="date"
+                display="default"
+                onChange={onChangeDate}
+              />
+            )}
+            {showTime && (
+              <DateTimePicker
+                value={date}
+                mode="time"
+                display="default"
+                onChange={onChangeTime}
+              />
+            )}
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Ưu tiên</Text>

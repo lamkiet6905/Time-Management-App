@@ -23,6 +23,14 @@ function toDateStr(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
+function getLocalDateString(dateStr: string) {
+  const d = new Date(dateStr);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 export default function CalendarScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -45,7 +53,7 @@ export default function CalendarScreen() {
   const taskDotMap: Record<string, { hasPending: boolean; hasDone: boolean; hasFailed: boolean }> = {};
   tasks.forEach(t => {
     if (!t.due_date) return;
-    const d = t.due_date.slice(0, 10);
+    const d = getLocalDateString(t.due_date);
     if (!taskDotMap[d]) taskDotMap[d] = { hasPending: false, hasDone: false, hasFailed: false };
     if (t.status === 'pending') taskDotMap[d].hasPending = true;
     else if (t.status === 'done') taskDotMap[d].hasDone = true;
@@ -70,7 +78,7 @@ export default function CalendarScreen() {
     else setViewMonth(m => m + 1);
   };
 
-  const selectedTasks = tasks.filter(t => t.due_date?.startsWith(selectedDate));
+  const selectedTasks = tasks.filter(t => t.due_date && getLocalDateString(t.due_date) === selectedDate);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>

@@ -55,8 +55,19 @@ export default function DashboardScreen() {
     }
   };
 
-  const pendingTasks = tasks.filter(t => t.status === 'pending');
-  const doneTasks = tasks.filter(t => t.status === 'done');
+  const todayDateObj = new Date();
+  todayDateObj.setHours(23, 59, 59, 999);
+
+  const pendingTasks = tasks.filter(t => {
+    if (t.status !== 'pending') return false;
+    if (!t.due_date) return true;
+    return new Date(t.due_date) <= todayDateObj;
+  });
+  const doneTasks = tasks.filter(t => {
+    if (t.status !== 'done') return false;
+    if (!t.completed_at) return true;
+    return new Date(t.completed_at).toISOString().slice(0, 10) === today;
+  });
 
   const greetingTime = () => {
     const h = new Date().getHours();
