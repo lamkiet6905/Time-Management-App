@@ -50,7 +50,7 @@ async function start() {
   try {
     await sequelize.authenticate();
     console.log('✅ Database connected successfully.');
-    await sequelize.sync({ alter: true });
+    await sequelize.sync(); // Bỏ { alter: true } để không tự sinh thêm index thừa mỗi lần restart
     console.log('✅ Database synchronized.');
     cronJobs.init();
     console.log('✅ Cron jobs initialized.');

@@ -50,6 +50,12 @@ const buffs = [
 async function seed() {
   try {
     await sequelize.authenticate();
+    try {
+      await sequelize.query("UPDATE tasks SET status = 'pending' WHERE status NOT IN ('pending', 'done', 'failed', 'skipped')");
+      console.log('✅ Cleaned up invalid task statuses');
+    } catch (e) {
+      console.log('ℹ️ Skipping status cleanup (table may not exist or other error)');
+    }
     await sequelize.sync({ alter: true });
     console.log('✅ DB connected');
 

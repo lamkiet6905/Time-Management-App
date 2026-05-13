@@ -53,11 +53,26 @@ export default function CalendarScreen() {
   const taskDotMap: Record<string, { hasPending: boolean; hasDone: boolean; hasFailed: boolean }> = {};
   tasks.forEach(t => {
     if (!t.due_date) return;
-    const d = getLocalDateString(t.due_date);
-    if (!taskDotMap[d]) taskDotMap[d] = { hasPending: false, hasDone: false, hasFailed: false };
-    if (t.status === 'pending') taskDotMap[d].hasPending = true;
-    else if (t.status === 'done') taskDotMap[d].hasDone = true;
-    else taskDotMap[d].hasFailed = true;
+    
+    const startDate = new Date(t.due_date);
+    const durationDays = Math.max(0, Math.ceil((t.duration_minutes || 0) / 1440) - 1);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + durationDays);
+    
+    let current = new Date(startDate);
+    current.setHours(0, 0, 0, 0);
+    
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+    
+    while (current <= end) {
+      const d = getLocalDateString(current.toISOString());
+      if (!taskDotMap[d]) taskDotMap[d] = { hasPending: false, hasDone: false, hasFailed: false };
+      if (t.status === 'pending') taskDotMap[d].hasPending = true;
+      else if (t.status === 'done') taskDotMap[d].hasDone = true;
+      else taskDotMap[d].hasFailed = true;
+      current.setDate(current.getDate() + 1);
+    }
   });
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth);
@@ -78,7 +93,23 @@ export default function CalendarScreen() {
     else setViewMonth(m => m + 1);
   };
 
-  const selectedTasks = tasks.filter(t => t.due_date && getLocalDateString(t.due_date) === selectedDate);
+  const selectedTasks = tasks.filter(t => {
+    if (!t.due_date) return false;
+    const startDate = new Date(t.due_date);
+    const durationDays = Math.max(0, Math.ceil((t.duration_minutes || 0) / 1440) - 1);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + durationDays);
+    
+    const selectedD = new Date(selectedDate);
+    selectedD.setHours(12, 0, 0, 0);
+    
+    const startD = new Date(startDate);
+    startD.setHours(0, 0, 0, 0);
+    const endD = new Date(endDate);
+    endD.setHours(23, 59, 59, 999);
+    
+    return selectedD >= startD && selectedD <= endD;
+  });
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>

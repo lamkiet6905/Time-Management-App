@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import api from '../services/api';
 import * as sqliteService from '../services/sqliteService';
 import NetInfo from '@react-native-community/netinfo';
+import { useAuthStore } from './authStore';
 
 export interface Task {
   id: string;
@@ -86,6 +87,9 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   completeTask: async (id) => {
     const { data } = await api.patch(`/tasks/${id}/complete`);
     set(s => ({ tasks: s.tasks.map(t => t.id === id ? { ...t, status: 'done', completed_at: new Date().toISOString() } : t) }));
+    if (data.data && data.data.user) {
+      useAuthStore.getState().updateUser(data.data.user);
+    }
     return data.data;
   },
 

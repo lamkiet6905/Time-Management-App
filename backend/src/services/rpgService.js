@@ -97,8 +97,8 @@ async function gainExp(user, expAmount) {
     // Update on each level
     user.exp_to_next = expToNextLevel(currentLevel);
     user.max_hp = newMaxHp;
-    // Restore some HP on level up
-    user.hp = Math.min(user.hp + 20, newMaxHp);
+    // Cập nhật HP khi lên level: +40 HP (Real-time update handled by frontend)
+    user.hp = Math.min(user.hp + 40, newMaxHp);
   }
 
   const leveledUp = levelsGained > 0;

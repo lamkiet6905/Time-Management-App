@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity,
-  Switch, Platform, KeyboardAvoidingView, ActivityIndicator, Animated, Alert,
+  Switch, Platform, KeyboardAvoidingView, ActivityIndicator, Animated, Alert, Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -40,15 +40,49 @@ export default function CreateTaskScreen() {
   const [date, setDate] = useState(new Date());
   const [showDate, setShowDate] = useState(false);
   const [showTime, setShowTime] = useState(false);
+  const [taskMissingDate, setTaskMissingDate] = useState<any>(null);
+  const [taskMissingDuration, setTaskMissingDuration] = useState<any>(null);
+  const [missingDurationInput, setMissingDurationInput] = useState('');
 
-  const onChangeDate = (event: any, selectedDate?: Date) => {
+  const handleMissingDurationSubmit = async () => {
+     if (!missingDurationInput || isNaN(parseInt(missingDurationInput)) || parseInt(missingDurationInput) <= 0) {
+        Alert.alert('Lỗi', 'Vui lòng nhập số phút hợp lệ');
+        return;
+     }
+     await useTaskStore.getState().updateTask(taskMissingDuration.id, { duration_minutes: parseInt(missingDurationInput) });
+     Alert.alert('Thành công', 'Đã lưu task đầy đủ thông tin!');
+     setTaskMissingDuration(null);
+     router.back();
+  };
+
+  const onChangeDate = async (event: any, selectedDate?: Date) => {
     setShowDate(false);
     if (selectedDate) {
       setDate(selectedDate);
       const yyyy = selectedDate.getFullYear();
       const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
       const dd = String(selectedDate.getDate()).padStart(2, '0');
+      
+      if (taskMissingDate) {
+        const finalDate = `${yyyy}-${mm}-${dd}T23:59:00+07:00`;
+        await useTaskStore.getState().updateTask(taskMissingDate.id, { due_date: finalDate });
+        
+        if (!taskMissingDate.duration_minutes) {
+           Alert.alert('Thông báo', 'Vui lòng bổ sung thêm thời lượng cho task!');
+           setTaskMissingDuration(taskMissingDate);
+           setTaskMissingDate(null);
+           return;
+        }
+        
+        Alert.alert('Thành công', 'Đã cập nhật deadline!');
+        router.back();
+        return;
+      }
       setDueDate(`${yyyy}-${mm}-${dd}`);
+    } else {
+      if (taskMissingDate) {
+        Alert.alert('Bắt buộc', 'Task chưa có deadline. Vui lòng chọn ngày!', [{ text: 'OK', onPress: () => setShowDate(true) }]);
+      }
     }
   };
 
@@ -74,6 +108,18 @@ export default function CreateTaskScreen() {
     setAiResult(null);
     try {
       const { task, aiAvailable } = await aiParseTask(aiText.trim());
+      
+      if (!task.due_date) {
+        setTaskMissingDate(task);
+        setShowDate(true);
+        return; // Don't go back, wait for user to pick date
+      }
+      if (!task.duration_minutes) {
+        Alert.alert('Thông báo', 'AI không tìm thấy thời lượng. Vui lòng nhập thời lượng!');
+        setTaskMissingDuration(task);
+        return;
+      }
+
       if (!aiAvailable) {
         setAiResult('⚠️ AI chưa được cấu hình. Task đã được tạo với thông tin cơ bản.');
       } else {
@@ -90,6 +136,14 @@ export default function CreateTaskScreen() {
   const handleManualCreate = async () => {
     if (!title.trim()) {
       Alert.alert('Thiếu thông tin', 'Vui lòng nhập tiêu đề task');
+      return;
+    }
+    if (!dueDate) {
+      Alert.alert('Thiếu thông tin', 'Vui lòng chọn ngày bắt đầu (Ngày) cho task');
+      return;
+    }
+    if (!duration || isNaN(parseInt(duration)) || parseInt(duration) <= 0) {
+      Alert.alert('Thiếu thông tin', 'Vui lòng nhập thời lượng (phút) hợp lệ cho task');
       return;
     }
     setIsLoading(true);
@@ -360,6 +414,28 @@ export default function CreateTaskScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      <Modal visible={!!taskMissingDuration} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Nhập thời lượng</Text>
+            <Text style={styles.modalDesc}>Task này chưa có thời lượng. Vui lòng nhập số phút (ví dụ: 60):</Text>
+            <TextInput
+              style={styles.modalInput}
+              keyboardType="number-pad"
+              placeholder="60"
+              placeholderTextColor={Colors.text.muted}
+              value={missingDurationInput}
+              onChangeText={setMissingDurationInput}
+              autoFocus
+            />
+            <TouchableOpacity style={styles.modalBtn} onPress={handleMissingDurationSubmit}>
+              <Text style={styles.modalBtnText}>Lưu Thời Lượng</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </KeyboardAvoidingView>
   );
 }
@@ -422,4 +498,11 @@ const styles = StyleSheet.create({
   },
   chipText: { fontSize: FontSize.sm, color: Colors.text.secondary, fontWeight: '600' },
   chipExp: { fontSize: 10, fontWeight: '700' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: Spacing.xl },
+  modalContent: { backgroundColor: Colors.bg.card, width: '100%', borderRadius: BorderRadius.lg, padding: Spacing.lg, borderWidth: 1, borderColor: Colors.border.default },
+  modalTitle: { fontSize: FontSize.lg, fontWeight: '800', color: Colors.text.primary, marginBottom: Spacing.sm },
+  modalDesc: { fontSize: FontSize.sm, color: Colors.text.secondary, marginBottom: Spacing.md },
+  modalInput: { backgroundColor: Colors.bg.primary, borderRadius: BorderRadius.md, borderWidth: 1, borderColor: Colors.border.default, color: Colors.text.primary, fontSize: FontSize.lg, padding: Spacing.md, marginBottom: Spacing.lg, textAlign: 'center' },
+  modalBtn: { backgroundColor: Colors.brand.violet, paddingVertical: 14, borderRadius: BorderRadius.md, alignItems: 'center' },
+  modalBtnText: { color: '#fff', fontSize: FontSize.base, fontWeight: '700' },
 });
