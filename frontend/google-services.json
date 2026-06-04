@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "859375720544",
+    "project_id": "liferpg-abc123",
+    "storage_bucket": "liferpg-abc123.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:859375720544:android:c0e5408dac44788ef8cb05",
+        "android_client_info": {
+          "package_name": "com.ducchien.liferpgv3"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "859375720544-ggo15sm0047il1r928d42dof92di25q3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTMQYkY7ZjdFk1cshW11PrXi_anbYPlzg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "859375720544-ggo15sm0047il1r928d42dof92di25q3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:859375720544:android:69c29deddd7290a0f8cb05",
+        "android_client_info": {
+          "package_name": "com.liferpg.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "859375720544-ggo15sm0047il1r928d42dof92di25q3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTMQYkY7ZjdFk1cshW11PrXi_anbYPlzg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "859375720544-ggo15sm0047il1r928d42dof92di25q3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

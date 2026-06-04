@@ -1,0 +1,49 @@
+# Dependencies
+**/node_modules/
+
+# Environments and credentials
+.env
+backend/.env
+backend/firebase-service-account.json
+
+# Test files
+backend/test-*.js
+backend/test-*.png
+backend/test-*.jpg
+backend/test-*.jpeg
+test-*.js
+test-*.png
+test-*.jpg
+test-*.jpeg
+backend/uploads/
+
+
+# Expo / Frontend
+frontend/.expo/
+frontend/dist/
+frontend/web-build/
+frontend/expo-env.d.ts
+frontend/.kotlin/
+frontend/*.orig.*
+frontend/*.jks
+frontend/*.p8
+frontend/*.p12
+frontend/*.key
+frontend/*.mobileprovision
+frontend/.metro-health-check*
+frontend/ios/
+frontend/android/
+
+# System / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.git_backup/
+**/.git_backup/
+
